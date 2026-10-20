@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>View Rooms - Hotel Booking System</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+  <header>
+    <div class="header-content">
+      <h1>Hotel Booking System</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="rooms.html">View Rooms</a>
+        <a href="my-bookings.html">My Bookings</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <h2 style="margin-bottom: 1rem">All Rooms</h2>
+    <p style="color: var(--text-light); margin-bottom: 1.5rem">
+      <span id="roomsCount">0</span> rooms found
+    </p>
+
+    <form id="filterForm" class="filters">
+      <div class="form-group">
+        <label for="searchInput">Search</label>
+        <input type="text" id="searchInput" placeholder="Hotel, city, or room type..." />
+      </div>
+      <div class="form-group">
+        <label for="cityFilter">City</label>
+        <select id="cityFilter">
+          <option value="">All Cities</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="typeFilter">Room Type</label>
+        <select id="typeFilter">
+          <option value="">All Types</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="availFilter">Availability</label>
+        <select id="availFilter">
+          <option value="">All Rooms</option>
+          <option value="available">Available Only</option>
+          <option value="booked">Fully Booked</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="sortBy">Sort By</label>
+        <select id="sortBy">
+          <option value="rating_desc">Highest Rated</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="reviews_desc">Most Reviewed</option>
+          <option value="name_asc">Name A-Z</option>
+        </select>
+      </div>
+      <button type="submit" class="btn">Apply Filters</button>
+      <button type="button" id="resetFilters" class="btn btn-secondary">Reset</button>
+    </form>
+
+    <div id="roomsContainer" class="rooms-grid"></div>
+  </main>
+
+  <script type="module" src="js/rooms.js"></script>
+</body>
+
+</html>

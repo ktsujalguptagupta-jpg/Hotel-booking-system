@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Booking Confirmation - Hotel Booking System</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+  <header>
+    <div class="header-content">
+      <h1>Hotel Booking System</h1>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="rooms.html">View Rooms</a>
+        <a href="my-bookings.html">My Bookings</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="confirmation-card">
+      <h2 id="confirmTitle">✓ Booking Confirmed!</h2>
+      <p style="color: var(--text-light)">
+        Thank you for your reservation. Your booking details are below.
+      </p>
+
+      <div id="bookingDetails" class="booking-details"></div>
+
+      <div id="cancelArea" style="display:none; margin:1.5rem 0">
+        <button id="cancelBtn" class="btn btn-danger">Cancel This Booking</button>
+      </div>
+
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap">
+        <a href="index.html" class="btn btn-secondary">Home</a>
+        <a href="rooms.html" class="btn">Browse More Rooms</a>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { API } from './js/api.js';
+
+    function formatPrice(price) {
+      return new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: 'INR',
+        maximumFractionDigits: 0
+      }).format(price);
+    }
+
+    function formatDate(d) {
+      return new Date(d).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+    }
+
+    async function loadConfirmation() {
+      const params = new URLSearchParams(window.location.search);
+      const bookingId = params.get('bookingId');
+
+      if (!bookingId) {
+        document.getElementById('bookingDetails').innerHTML = '<p>Booking ID not found.</p>';
+        return;
+      }
+
+      try {
+        const b = await API.getBooking(bookingId);
+        const container = document.getElementById('bookingDetails');
+        const nights = Math.ceil((new Date(b.check_out) - new Date(b.check_in)) / (1000 * 60 * 60 * 24));
+
+        document.getElementById('confirmTitle').textContent = b.status === 'confirmed'
+          ? '✓ Booking Confirmed!'
+          : b.status === 'cancelled'
+            ? '✗ Booking Cancelled'
+            : 'Booking Details';
+
+        container.innerHTML = `
+          <p><strong>Booking ID:</strong> #${b.id}</p>
+          <p><strong>Status:</strong> <span class="badge ${b.status === 'confirmed' ? 'badge-success' : 'badge-danger'}">${b.status}</span></p>
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border)">
+          <p><strong>Hotel:</strong> ${b.hotel_name}</p>
+          <p><strong>Room Type:</strong> ${b.room_type}</p>
+          <p><strong>Location:</strong> ${b.place || ''}${b.city ? ' • ' + b.city : ''}${b.state ? ', ' + b.state : ''}</p>
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border)">
+          <p><strong>Check-In:</strong> ${formatDate(b.check_in)}</p>
+          <p><strong>Check-Out:</strong> ${formatDate(b.check_out)}</p>
+          <p><strong>Guests:</strong> ${b.adults} Adults, ${b.children} Children</p>
+          <p><strong>Nights:</strong> ${nights}</p>
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border)">
+          <p><strong>Guest Name:</strong> ${b.guest_name}</p>
+          <p><strong>Email:</strong> ${b.guest_email}</p>
+          ${b.guest_phone ? `<p><strong>Phone:</strong> ${b.guest_phone}</p>` : ''}
+          <hr style="margin:1rem 0;border:none;border-top:1px solid var(--border)">
+          <p style="font-size:1.25rem"><strong>Total:</strong> <span style="color:var(--primary)">${formatPrice(b.total_price)}</span></p>
+        `;
+
+        if (b.status === 'confirmed') {
+          document.getElementById('cancelArea').style.display = 'block';
+          document.getElementById('cancelBtn').onclick = async () => {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+              const btn = document.getElementById('cancelBtn');
+              btn.disabled = true;
+              btn.textContent = 'Cancelling...';
+              try {
+                await API.cancelBooking(bookingId);
+                alert('Booking cancelled successfully.');
+                loadConfirmation();
+              } catch (err) {
+                alert('Failed to cancel: ' + err.message);
+                btn.disabled = false;
+                btn.textContent = 'Cancel This Booking';
+              }
+            }
+          };
+        } else {
+          document.getElementById('cancelArea').style.display = 'none';
+        }
+      } catch (err) {
+        document.getElementById('bookingDetails').innerHTML = `<p>${err.message}</p>`;
+      }
+    }
+
+    loadConfirmation();
+  </script>
+</body>
+
+</html>
